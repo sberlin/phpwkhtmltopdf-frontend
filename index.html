@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <style>
+    h1 {
+      text-align:center;
+    }
+    body .glow {
+      display: none;
+      
+      -webkit-animation: glow 2s infinite ease; 
+      -moz-animation: glow 2s infinite ease;
+      -o-animation: glow 2s infinite ease;
+      animation: glow 2s infinite ease;
+    }
+    body .has-glow.active {
+      cursor:progress;
+    }
+    body .has-glow.active .glow {
+      display: inline-block;
+    }
+    @-moz-keyframes glow {
+        from { opacity: 1; }
+        50% { opacity: 0.5; }
+        to { opacity: 1; }
+    }
+    @-webkit-keyframes spin {
+        from { opacity: 1; }
+        50% { opacity: 0.5; }
+        to { opacity: 1; }
+    }
+    @keyframes spin {
+        from { opacity: 1; }
+        50% { opacity: 0.5; }
+        to { opacity: 1; }
+    }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://raw.githubusercontent.com/eligrey/FileSaver.js/master/FileSaver.js"></script>
+    
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Convert HTML Websites to PDF files</title>
+<body>
+<div class="container" ng-app="html2pdf" ng-controller="pageCtrl">
+    <h1>Convert HTML Websites to PDF files</h1>
+    <form class="form-horizontal" ng-submit="submit()">
+      <div class="form-group" ng-repeat="model in models track by $index">
+        <label for="url" class="col-md-2 control-label">
+          <span ng-show="!$index">Link</span>
+          <span>#{{$index + 1}}</span>
+        </label>
+        <div class="col-md-9">
+          <div class="input-group">
+            <input class="form-control" type="url" name="url" placeholder="https://google.de/" ng-model="model.url"/>
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="button" ng-click="removeUrl($index)">
+                <span class="glyphicon glyphicon-minus"></span>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-md-offset-2 col-md-6">
+          <button type="button" ng-click="addUrl()" class="btn btn-secondary">Add</button>
+          <button type="submit" class="btn btn-primary has-glow" ng-class="glowState">
+            <span class="glow glyphicon glyphicon-upload"></span>
+            <span>Submit</span>
+          </button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-offset-2 col-md-6">
+          <div class="alert alert-success" role="alert" ng-show="success">{{success}}</div>
+          <div class="alert alert-danger" role="alert" ng-show="error">{{error}}</div>
+        </div>
+      </div>
+    </form>
+</div>
+
+<script>
+var app = angular.module("html2pdf", []);
+app.controller("pageCtrl", function($scope, $http, $sce) {
+    $scope.success = null;
+    $scope.error = null;
+    $scope.glowState = "inactive";
+    $scope.models = [].concat({ "url": "" }, { "url": "" }, { "url": "" });
+    
+    $scope.addUrl = function() {
+        $scope.glowState = "inactive";
+        $scope.models.push({ "url": "" });
+    }
+    $scope.removeUrl = function(i) {
+        $scope.glowState = "inactive";
+        $scope.models.splice(i, 1);
+    }
+    $scope.submit = function(i) {
+        $scope.glowState = "active";
+        $http.post("html2pdf.php", $scope.models.filter(function(model){return model.url.length}), { "responseType": "arraybuffer" })
+          .then(function(response) {
+              $scope.glowState = "inactive";
+              $scope.success = "Successfully created archive with the PDF files you wanted!";
+              var file = new Blob([response.data], { "type": "application/zip" });
+              saveAs(file, "html2pdf.zip");
+          }, function(error) {
+              $scope.glowState = "inactive";
+              $scope.error = "Something went wrong!";
+              console.log("Promise error: " + JSON.stringify(error));
+          });
+    }
+});
+</script>
+</body>
+</html>

@@ -26,6 +26,8 @@ $failed = array();
 
 $i = 0;
 foreach($urls as $url) {
+  // taken from https://mathiasbynens.be/demo/url-regex
+  // by Jeffrey Friedl
   if (preg_match(
       "@\b((ftp|https?)://[-\w]+(\.\w[-\w]*)+|(?:[a-z0-9](?:[-a-z0-9]*[a-z0-9])?\.)+(?: com\b|edu\b|biz\b|gov\b|in(?:t|fo)\b|mil\b|net\b|org\b|[a-z][a-z]\b))(\:\d+)?(/[^.!,?;\"'<>()\[\]{}\s\x7F-\xFF]*(?:[.!,?]+[^.!,?;\"'<>()\[\]{}\s\x7F-\xFF]+)*)?@iS",
       $url)
@@ -35,7 +37,7 @@ foreach($urls as $url) {
     $content = file_get_contents($url);
     preg_match_all("#<title>(.*)</title>#ms", $content, $matches);
     $title = (empty($matches[1][0]) ? "document_".$i++.".pdf" : html_entity_decode($matches[1][0]).".pdf");
-    $title = preg_replace("/[\s]/", "_", $title);
+    $title = preg_replace("#[\s/]#", "_", $title);
     $zip->addFromString($title, $pdf->toString());
   } else {
     $failed[] = $url;

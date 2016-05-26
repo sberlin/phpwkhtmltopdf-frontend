@@ -35,7 +35,7 @@ foreach($urls as $url) {
     $pdf = new Pdf($url);
     $pdf->setOptions(array("load-error-handling" => "ignore", "no-stop-slow-scripts", "ignoreWarnings" => true));
     $content = file_get_contents($url);
-    preg_match_all("#<title>(.*)</title>#ms", $content, $matches);
+    preg_match_all("#<title>(.*)</title>#msU", $content, $matches);
     $title = (empty($matches[1][0]) ? "document_".$i++.".pdf" : html_entity_decode($matches[1][0]).".pdf");
     $title = preg_replace("#[\s/]#", "_", $title);
     $zip->addFromString($title, $pdf->toString());
